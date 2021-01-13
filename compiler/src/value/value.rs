@@ -39,7 +39,7 @@ use snarkos_models::{
     curves::{Field, PrimeField},
     gadgets::{
         r1cs::{ConstraintSystem, Index},
-        utilities::{boolean::Boolean, eq::ConditionalEqGadget, select::CondSelectGadget},
+        utilities::{boolean::Boolean, eq::ConditionalEqGadget, select::CondSelectGadget, ToBitsGadget},
     },
 };
 use std::fmt;
@@ -328,6 +328,7 @@ impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedValue<F, G> {
 
     ///
     /// Return the constraint system indices that this value is located at.
+    ///
     pub fn get_constraint_system_indices<CS: ConstraintSystem<F>>(&self, mut cs: CS) -> Vec<Index> {
         match self {
             ConstrainedValue::Boolean(boolean) => get_constraint_system_indices_boolean(boolean),
@@ -363,6 +364,41 @@ impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedValue<F, G> {
             }
             _ => vec![],
         }
+    }
+
+    ///
+    /// Return the constraint system boolean gadgets that make up the `self` value.
+    ///
+    pub fn get_constraint_system_bits<CS: ConstraintSystem<F>>(&self, mut cs: CS) -> Vec<Boolean> {
+        let mut output = Vec::new();
+        match self {
+            ConstrainedValue::Boolean(boolean) => output.push(boolean.to_owned()),
+            ConstrainedValue::Integer(integer) => output.append(&mut integer.get_bits()),
+            ConstrainedValue::Field(field) => output.append(&mut field.to_bits(cs).unwrap()),
+            ConstrainedValue::Group(group) => output.append(&mut group.to_bits(cs).unwrap()),
+            ConstrainedValue::Address(address) => output.append(&mut address.bytes.to_bits(cs).unwrap()),
+
+            // Value wrappers.
+            ConstrainedValue::Array(array) => {
+                for (i, element) in array.iter().enumerate() {
+                    let mut element_indices =
+                        element.get_constraint_system_bits(&mut cs.ns(|| format!("array index `{}`", i)));
+
+                    output.append(&mut element_indices);
+                }
+            }
+            ConstrainedValue::Tuple(tuple) => {
+                for (i, element) in tuple.iter().enumerate() {
+                    let mut element_indices =
+                        element.get_constraint_system_bits(&mut cs.ns(|| format!("tuple index `{}`", i)));
+
+                    output.append(&mut element_indices);
+                }
+            }
+            _ => { /* Do not write circuits etc. to output */ }
+        }
+
+        output
     }
 }
 

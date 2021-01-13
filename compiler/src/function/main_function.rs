@@ -27,7 +27,10 @@ use leo_ast::{Expression, Function, FunctionInput, Identifier, Input};
 
 use snarkos_models::{
     curves::{Field, PrimeField},
-    gadgets::r1cs::{ConstraintSystem, Index},
+    gadgets::{
+        r1cs::{ConstraintSystem, Index},
+        utilities::boolean::Boolean,
+    },
 };
 
 impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedProgram<F, G> {
@@ -43,7 +46,8 @@ impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedProgram<F, G> {
 
         // Iterate over main function input variables and allocate new values
         let mut input_variables = Vec::with_capacity(function.input.len());
-        let mut cs_input_indices: Vec<Index> = Vec::with_capacity(0);
+        let mut cs_input_bits: Vec<Boolean> = Vec::with_capacity(0);
+        // let mut cs_input_indices: Vec<Index> = Vec::with_capacity(0);
 
         for (i, input_model) in function.input.clone().into_iter().enumerate() {
             let (input_id, value) = match input_model {
@@ -73,8 +77,10 @@ impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedProgram<F, G> {
             let input_name = new_scope(&function_name, &input_id.to_string());
 
             // Store constraint system input variable indices for serialization.
-            let mut indices = value.get_constraint_system_indices(cs.ns(|| format!("input index {}", i)));
-            cs_input_indices.append(&mut indices);
+            let mut bits = value.get_constraint_system_bits(cs.ns(|| format!("input bit {}", i)));
+            cs_input_bits.append(&mut bits);
+            // let mut indices = value.get_constraint_system_indices(cs.ns(|| format!("input index {}", i)));
+            // cs_input_indices.append(&mut indices);
 
             // Store a new variable for every allocated main function input
             self.store(input_name, value);
@@ -85,10 +91,13 @@ impl<F: Field + PrimeField, G: GroupType<F>> ConstrainedProgram<F, G> {
         let span = function.span.clone();
         let result_value = self.enforce_function(cs, scope, &function_name, function, input_variables, "")?;
 
+        // Lookup result value constraint variable bits.
+        let cs_output_bits = result_value.get_constraint_system_bits(cs);
         // Lookup result value constraint variable indices.
-        let cs_output_indices = result_value.get_constraint_system_indices(cs);
+        // let cs_output_indices = result_value.get_constraint_system_indices(cs);
 
-        let output_bytes = Output::new(registers, result_value, cs_input_indices, cs_output_indices, span)?;
+        let output_bytes = Output::new(registers, result_value, cs_input_bits, cs_output_bits, span)?;
+        // let output_bytes = Output::new(registers, result_value, cs_input_indices, cs_output_indices, span)?;
 
         Ok(output_bytes)
     }

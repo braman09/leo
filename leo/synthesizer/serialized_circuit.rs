@@ -35,8 +35,8 @@ pub struct SerializedCircuit {
 
     pub input_assignment: Vec<SerializedField>,
     pub aux_assignment: Vec<SerializedField>,
-    pub program_input_range: (usize, usize),
-    pub output_indices: Vec<usize>,
+    pub input_indices: Vec<String>,
+    pub output_indices: Vec<String>,
 
     pub at: Vec<Vec<(SerializedField, SerializedIndex)>>,
     pub bt: Vec<Vec<(SerializedField, SerializedIndex)>>,
@@ -69,7 +69,7 @@ impl SerializedCircuit {
         let aux_assignment = get_serialized_assignments::<E>(&synthesizer.aux_assignment);
 
         // Serialize program input indices.
-        let program_input_range = output.input_range();
+        let input_indices = output.input_indices();
 
         // Serialize output indices.
         let output_indices = output.output_indices();
@@ -115,7 +115,7 @@ impl SerializedCircuit {
             num_constraints,
             input_assignment,
             aux_assignment,
-            program_input_range,
+            input_indices,
             output_indices,
             at,
             bt,

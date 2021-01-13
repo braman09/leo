@@ -20,40 +20,40 @@ use leo_ast::{Parameter, Registers, Span};
 use snarkos_models::curves::{Field, PrimeField};
 
 use serde::{Deserialize, Serialize};
-use snarkos_models::gadgets::r1cs::Index;
+use snarkos_models::gadgets::{r1cs::Index, utilities::boolean::Boolean};
 
 /// Serialized program return output.
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Output {
     bytes: Vec<u8>,
-    input_indices: Vec<usize>,
-    output_indices: Vec<usize>,
+    input_indices: Vec<String>,
+    output_indices: Vec<String>,
 }
 impl Output {
     pub fn bytes(&self) -> &Vec<u8> {
         &self.bytes
     }
 
-    pub fn input_indices(&self) -> Vec<usize> {
+    pub fn input_indices(&self) -> Vec<String> {
         self.input_indices.to_owned()
     }
 
-    pub fn input_range(&self) -> (usize, usize) {
-        let first = self.input_indices.first().map(|num| num.to_owned()).unwrap_or(0);
-        let last = self.input_indices.last().map(|num| num.to_owned()).unwrap_or(0);
+    // pub fn input_range(&self) -> (usize, usize) {
+    //     let first = self.input_indices.first().map(|num| num.to_owned()).unwrap_or(0);
+    //     let last = self.input_indices.last().map(|num| num.to_owned()).unwrap_or(0);
+    //
+    //     (first, last)
+    // }
 
-        (first, last)
-    }
-
-    pub fn output_indices(&self) -> Vec<usize> {
+    pub fn output_indices(&self) -> Vec<String> {
         self.output_indices.to_owned()
     }
 
     pub fn new<F: Field + PrimeField, G: GroupType<F>>(
         registers: &Registers,
         value: ConstrainedValue<F, G>,
-        cs_input_indices: Vec<Index>,
-        cs_output_indices: Vec<Index>,
+        cs_input_indices: Vec<Boolean>,
+        cs_output_indices: Vec<Boolean>,
         span: Span,
     ) -> Result<Self, OutputError> {
         let return_values = match value {
@@ -95,8 +95,12 @@ impl Output {
         let bytes = string.into_bytes();
 
         // Serialize constraint system indices.
-        let input_indices = indices_to_usize(cs_input_indices);
-        let output_indices = indices_to_usize(cs_output_indices);
+        let input_indices = cs_input_indices.iter().map(|bit| format!("{:?}", bit)).collect();
+        let output_indices = cs_output_indices.iter().map(|bit| format!("{:?}", bit)).collect();
+
+        // Serialize constraint system indices.
+        // let input_indices = indices_to_usize(cs_input_indices);
+        // let output_indices = indices_to_usize(cs_output_indices);
 
         Ok(Self {
             bytes,
@@ -106,12 +110,12 @@ impl Output {
     }
 }
 
-fn indices_to_usize(indices: Vec<Index>) -> Vec<usize> {
-    indices
-        .iter()
-        .map(|index| match index {
-            Index::Input(index) => index.to_owned(),
-            Index::Aux(index) => index.to_owned(),
-        })
-        .collect::<Vec<_>>()
-}
+// fn indices_to_usize(indices: Vec<Index>) -> Vec<usize> {
+//     indices
+//         .iter()
+//         .map(|index| match index {
+//             Index::Input(index) => index.to_owned(),
+//             Index::Aux(index) => index.to_owned(),
+//         })
+//         .collect::<Vec<_>>()
+// }
