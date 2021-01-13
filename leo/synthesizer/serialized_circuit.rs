@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-use crate::synthesizer::{CircuitSynthesizer, SerializedField, SerializedIndex};
+use crate::synthesizer::{CircuitSynthesizer, SerializedField, SerializedIndex, SerializedVariable};
 use leo_compiler::Output;
 
 use snarkos_curves::bls12_377::Bls12_377;
@@ -33,8 +33,8 @@ pub struct SerializedCircuit {
     pub num_aux: usize,
     pub num_constraints: usize,
 
-    pub input_assignment: Vec<SerializedField>,
-    pub aux_assignment: Vec<SerializedField>,
+    pub input_assignment: Vec<SerializedVariable>,
+    pub aux_assignment: Vec<SerializedVariable>,
     pub input_indices: Vec<String>,
     pub output_indices: Vec<String>,
 
@@ -63,10 +63,18 @@ impl SerializedCircuit {
         }
 
         // Serialize input assignments.
-        let input_assignment = get_serialized_assignments::<E>(&synthesizer.input_assignment);
+        let input_assignment = get_serialized_assignments::<E>(&synthesizer.input_assignment)
+            .iter()
+            .enumerate()
+            .map(|(i, value)| SerializedVariable::new(format!("Input({})", i), value.to_owned()))
+            .collect();
 
         // Serialize aux assignments.
-        let aux_assignment = get_serialized_assignments::<E>(&synthesizer.aux_assignment);
+        let aux_assignment = get_serialized_assignments::<E>(&synthesizer.aux_assignment)
+            .iter()
+            .enumerate()
+            .map(|(i, value)| SerializedVariable::new(format!("Aux({})", i), value.to_owned()))
+            .collect();
 
         // Serialize program input indices.
         let input_indices = output.input_indices();
@@ -124,71 +132,71 @@ impl SerializedCircuit {
     }
 }
 
-impl TryFrom<SerializedCircuit> for CircuitSynthesizer<Bls12_377> {
-    type Error = FieldError;
-
-    fn try_from(serialized: SerializedCircuit) -> Result<CircuitSynthesizer<Bls12_377>, Self::Error> {
-        // Deserialize assignments
-        fn get_deserialized_assignments(
-            assignments: &[SerializedField],
-        ) -> Result<Vec<<Bls12_377 as PairingEngine>::Fr>, FieldError> {
-            let mut deserialized = Vec::with_capacity(assignments.len());
-
-            for serialized_assignment in assignments {
-                let field = <Bls12_377 as PairingEngine>::Fr::try_from(serialized_assignment)?;
-
-                deserialized.push(field);
-            }
-
-            Ok(deserialized)
-        }
-
-        let input_assignment = get_deserialized_assignments(&serialized.input_assignment)?;
-        let aux_assignment = get_deserialized_assignments(&serialized.aux_assignment)?;
-
-        // Deserialize constraints
-        fn get_deserialized_constraints(
-            constraints: &[(SerializedField, SerializedIndex)],
-        ) -> Result<Vec<(<Bls12_377 as PairingEngine>::Fr, Index)>, FieldError> {
-            let mut deserialized = Vec::with_capacity(constraints.len());
-
-            for &(ref serialized_coeff, ref serialized_index) in constraints {
-                let field = <Bls12_377 as PairingEngine>::Fr::try_from(serialized_coeff)?;
-                let index = Index::from(serialized_index);
-
-                deserialized.push((field, index));
-            }
-
-            Ok(deserialized)
-        }
-
-        let mut at = Vec::with_capacity(serialized.num_constraints);
-        let mut bt = Vec::with_capacity(serialized.num_constraints);
-        let mut ct = Vec::with_capacity(serialized.num_constraints);
-
-        for i in 0..serialized.num_constraints {
-            // Deserialize at[i]
-
-            let a_constraints = get_deserialized_constraints(&serialized.at[i])?;
-            at.push(a_constraints);
-
-            // Deserialize bt[i]
-
-            let b_constraints = get_deserialized_constraints(&serialized.bt[i])?;
-            bt.push(b_constraints);
-
-            // Deserialize ct[i]
-
-            let c_constraints = get_deserialized_constraints(&serialized.ct[i])?;
-            ct.push(c_constraints);
-        }
-
-        Ok(CircuitSynthesizer::<Bls12_377> {
-            input_assignment,
-            aux_assignment,
-            at,
-            bt,
-            ct,
-        })
-    }
-}
+// impl TryFrom<SerializedCircuit> for CircuitSynthesizer<Bls12_377> {
+//     type Error = FieldError;
+//
+//     fn try_from(serialized: SerializedCircuit) -> Result<CircuitSynthesizer<Bls12_377>, Self::Error> {
+//         // Deserialize assignments
+//         fn get_deserialized_assignments(
+//             assignments: &[SerializedField],
+//         ) -> Result<Vec<<Bls12_377 as PairingEngine>::Fr>, FieldError> {
+//             let mut deserialized = Vec::with_capacity(assignments.len());
+//
+//             for serialized_assignment in assignments {
+//                 let field = <Bls12_377 as PairingEngine>::Fr::try_from(serialized_assignment)?;
+//
+//                 deserialized.push(field);
+//             }
+//
+//             Ok(deserialized)
+//         }
+//
+//         let input_assignment = get_deserialized_assignments(&serialized.input_assignment)?;
+//         let aux_assignment = get_deserialized_assignments(&serialized.aux_assignment)?;
+//
+//         // Deserialize constraints
+//         fn get_deserialized_constraints(
+//             constraints: &[(SerializedField, SerializedIndex)],
+//         ) -> Result<Vec<(<Bls12_377 as PairingEngine>::Fr, Index)>, FieldError> {
+//             let mut deserialized = Vec::with_capacity(constraints.len());
+//
+//             for &(ref serialized_coeff, ref serialized_index) in constraints {
+//                 let field = <Bls12_377 as PairingEngine>::Fr::try_from(serialized_coeff)?;
+//                 let index = Index::from(serialized_index);
+//
+//                 deserialized.push((field, index));
+//             }
+//
+//             Ok(deserialized)
+//         }
+//
+//         let mut at = Vec::with_capacity(serialized.num_constraints);
+//         let mut bt = Vec::with_capacity(serialized.num_constraints);
+//         let mut ct = Vec::with_capacity(serialized.num_constraints);
+//
+//         for i in 0..serialized.num_constraints {
+//             // Deserialize at[i]
+//
+//             let a_constraints = get_deserialized_constraints(&serialized.at[i])?;
+//             at.push(a_constraints);
+//
+//             // Deserialize bt[i]
+//
+//             let b_constraints = get_deserialized_constraints(&serialized.bt[i])?;
+//             bt.push(b_constraints);
+//
+//             // Deserialize ct[i]
+//
+//             let c_constraints = get_deserialized_constraints(&serialized.ct[i])?;
+//             ct.push(c_constraints);
+//         }
+//
+//         Ok(CircuitSynthesizer::<Bls12_377> {
+//             input_assignment,
+//             aux_assignment,
+//             at,
+//             bt,
+//             ct,
+//         })
+//     }
+// }

@@ -14,17 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
-pub mod circuit_synthesizer;
-pub use self::circuit_synthesizer::*;
+use crate::synthesizer::SerializedField;
 
-pub mod serialized_circuit;
-pub use self::serialized_circuit::*;
+use serde::{Deserialize, Serialize};
+use std::{convert::TryFrom, str::FromStr};
 
-pub mod serialized_field;
-pub use self::serialized_field::*;
+#[derive(Clone, Serialize, Deserialize)]
+pub struct SerializedVariable {
+    variable: String, // Aux([]) or Input([])
+    value: SerializedField,
+}
 
-pub mod serialized_index;
-pub use self::serialized_index::*;
-
-pub mod serialized_variable;
-pub use self::serialized_variable::*;
+impl SerializedVariable {
+    pub fn new(variable: String, value: SerializedField) -> Self {
+        Self { variable, value }
+    }
+}

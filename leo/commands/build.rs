@@ -160,7 +160,7 @@ impl CLI for BuildCommand {
 
                 // Deserialize the circuit
                 let deserialized = SerializedCircuit::from_json_string(&serialized).unwrap();
-                let _circuit_synthesizer = CircuitSynthesizer::<Bls12_377>::try_from(deserialized).unwrap();
+                // let _circuit_synthesizer = CircuitSynthesizer::<Bls12_377>::try_from(deserialized).unwrap();
                 // println!("deserialized {:?}", circuit_synthesizer.num_constraints());
             }
 
