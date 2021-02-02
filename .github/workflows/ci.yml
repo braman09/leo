@@ -43,7 +43,7 @@ jobs:
       matrix:
         rust:
           - stable
-          - nightly
+#          - nightly
 
     steps:
       - name: Checkout

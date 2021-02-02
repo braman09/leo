@@ -31,6 +31,7 @@ use crate::{
     Variable,
     VariableDeclaration,
 };
+
 use std::{
     cell::RefCell,
     sync::{Arc, Weak},
