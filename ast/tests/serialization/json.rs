@@ -17,7 +17,6 @@
 #[cfg(not(feature = "ci_skip"))]
 use leo_ast::Program;
 use leo_ast::{Ast, AstError};
-use leo_grammar::{Grammar, ParserError};
 
 use std::path::{Path, PathBuf};
 

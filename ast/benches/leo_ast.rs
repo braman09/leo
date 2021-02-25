@@ -15,7 +15,6 @@
 // along with the Leo library. If not, see <https://www.gnu.org/licenses/>.
 
 use leo_ast::Ast;
-use leo_grammar::Grammar;
 
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::{path::Path, time::Duration};

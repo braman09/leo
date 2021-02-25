@@ -1197,7 +1197,7 @@ dependencies = [
  "criterion",
  "indexmap",
  "leo-ast",
- "leo-grammar",
+ "leo-parser",
  "num-bigint",
  "serde",
  "serde_json",
@@ -1211,7 +1211,6 @@ version = "1.2.2"
 dependencies = [
  "criterion",
  "indexmap",
- "leo-grammar",
  "leo-input",
  "pest",
  "serde",
@@ -1229,10 +1228,10 @@ dependencies = [
  "leo-asg",
  "leo-ast",
  "leo-gadgets",
- "leo-grammar",
  "leo-imports",
  "leo-input",
  "leo-package",
+ "leo-parser",
  "leo-state",
  "num-bigint",
  "pest",
@@ -1268,29 +1267,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "leo-grammar"
-version = "1.2.2"
-dependencies = [
- "criterion",
- "from-pest",
- "lazy_static",
- "pest",
- "pest-ast",
- "pest_derive",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
-]
-
-[[package]]
 name = "leo-imports"
 version = "1.2.2"
 dependencies = [
  "indexmap",
  "leo-asg",
  "leo-ast",
- "leo-grammar",
+ "leo-parser",
  "thiserror",
  "tracing",
 ]
@@ -1363,6 +1346,20 @@ dependencies = [
  "tracing",
  "walkdir",
  "zip",
+]
+
+[[package]]
+name = "leo-parser"
+version = "1.2.2"
+dependencies = [
+ "criterion",
+ "indexmap",
+ "lazy_static",
+ "leo-ast",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]
@@ -2281,9 +2278,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "security-framework"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6af1b6204f89cf0069736daf8b852573e3bc34898eee600e95d3dd855c12e81"
+checksum = "2dfd318104249865096c8da1dfabf09ddbb6d0330ea176812a62ec75e40c4166"
 dependencies = [
  "bitflags",
  "core-foundation",
@@ -2294,9 +2291,9 @@ dependencies = [
 
 [[package]]
 name = "security-framework-sys"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31531d257baab426203cf81c5ce1b0b55159dda7ed602ac81b582ccd62265741"
+checksum = "dee48cdde5ed250b0d3252818f646e174ab414036edb884dde62d80a3ac6082d"
 dependencies = [
  "core-foundation-sys",
  "libc",

@@ -21,12 +21,12 @@ edition = "2018"
 path = "../ast"
 version = "1.2.2"
 
-[dependencies.leo-grammar]
-path = "../grammar"
-version = "1.2.2"
-
 [dependencies.leo-asg]
 path = "../asg"
+version = "1.2.2"
+
+[dependencies.leo-parser]
+path = "../parser"
 version = "1.2.2"
 
 [dependencies.indexmap]
