@@ -69,7 +69,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
             "branch indicator 1 {} && {}",
             outer_indicator_string, inner_indicator_string
         );
-        let branch_1_indicator = Boolean::or(
+        let branch_1_indicator = Boolean::and(
             &mut cs.ns(|| format!("branch 1 {} {}:{}", span.text, &span.line, &span.start)),
             outer_indicator,
             &inner_indicator,
@@ -78,8 +78,14 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
 
         let mut results = vec![];
 
+        let mut branch_1_result = match branch_1_indicator.get_value() {
+            Some(true) => self.enforce_statement(cs, &branch_1_indicator, statement.result.get())?,
+            Some(false) => vec![],
+            None => vec![]
+        };
+
         // Evaluate branch 1
-        let mut branch_1_result = self.enforce_statement(cs, &branch_1_indicator, statement.result.get())?;
+        // let mut branch_1_result = self.enforce_statement(cs, &branch_1_indicator, statement.result.get())?;
 
         results.append(&mut branch_1_result);
 
