@@ -69,7 +69,7 @@ impl<'a, F: PrimeField, G: GroupType<F>> ConstrainedProgram<'a, F, G> {
             "branch indicator 1 {} && {}",
             outer_indicator_string, inner_indicator_string
         );
-        let branch_1_indicator = Boolean::and(
+        let branch_1_indicator = Boolean::or(
             &mut cs.ns(|| format!("branch 1 {} {}:{}", span.text, &span.line, &span.start)),
             outer_indicator,
             &inner_indicator,
